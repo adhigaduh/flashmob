@@ -1,0 +1,18 @@
+# MongoDB Connection
+MONGO_URI=mongodb+srv://mvp-dev:gwWsxtDDmDPH21LR@cluster0.k0rc8dc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+# Security
+JWT_SECRET=m0d3rnl@nd
+
+# Server Configuration
+PORT=3010
+NODE_ENV=development
+
+# CORS Configuration
+CORS_ORIGIN=*
+
+# Content Filtering
+SHOW_ONLY_CARDS_WITH_IMAGES=true
+
+# UI Configuration
+SHOW_CARD_STATS=true

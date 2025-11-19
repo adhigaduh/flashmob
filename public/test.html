@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test Page</h1>
+    <button onclick="testAPI()">Test API Call</button>
+    <pre id="result">Click button to test...</pre>
+
+    <script>
+        async function testAPI() {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Loading...';
+
+            console.log('Starting API call...');
+
+            try {
+                console.log('Fetching from /api/card');
+                const response = await fetch('/api/card', {
+                    credentials: 'include'
+                });
+
+                console.log('Response received:', response.status);
+
+                const data = await response.json();
+                console.log('Data parsed:', data);
+
+                resultEl.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                resultEl.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
