@@ -751,8 +751,8 @@
 
                     if (response.ok) {
                         console.log('Session reset successful');
-                        // Reload the page with a hard refresh to clear cache
-                        window.location.reload(true);
+                        // Quick redirect instead of hard reload for faster response
+                        window.location.href = window.location.pathname;
                     } else {
                         alert('Failed to reset history. Please try again.');
                     }
