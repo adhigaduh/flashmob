@@ -23,7 +23,7 @@ async function getCards(query = {}) {
 
         // Apply image filter if enabled
         if (showOnlyWithImages) {
-            cards = cards.filter(card => card.imageData && card.imageMimeType);
+            cards = cards.filter(card => card.hasImage === true);
             console.log(`Filtered to ${cards.length} cards with images`);
         }
 
@@ -33,10 +33,9 @@ async function getCards(query = {}) {
     const db = getDatabase();
     const collection = db.collection('contentcards');
 
-    // Add image filter to query if enabled
+    // Add image filter to query if enabled (using hasImage field for faster queries)
     if (showOnlyWithImages) {
-        query.imageData = { $exists: true, $ne: null };
-        query.imageMimeType = { $exists: true, $ne: null };
+        query.hasImage = true;
     }
 
     // Fetch cards
