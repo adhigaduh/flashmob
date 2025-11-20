@@ -16,6 +16,7 @@ const getEncryptionKey = () => {
  */
 function createNewSession() {
     return {
+        sessionId: crypto.randomBytes(16).toString('hex'),
         deliveredCards: [],
         userProfile: {
             preferredTypes: {},
@@ -84,7 +85,16 @@ function getSession(req) {
     }
 
     const session = decryptSession(encryptedSession);
-    return session || createNewSession();
+    if (!session) {
+        return createNewSession();
+    }
+
+    // Migration: Add sessionId to old sessions that don't have one
+    if (!session.sessionId) {
+        session.sessionId = crypto.randomBytes(16).toString('hex');
+    }
+
+    return session;
 }
 
 /**

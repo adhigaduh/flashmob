@@ -436,7 +436,9 @@
         let currentCard = null;
         let isLoadingCard = false;
         let lastLoadTime = 0;
+        let retryCount = 0;
         const LOAD_COOLDOWN = 500; // 500ms cooldown between loads
+        const MAX_RETRIES = 2;
 
         // Onboarding functions
         function showOnboarding() {
@@ -489,8 +491,12 @@
             try {
                 console.log('Fetching card from /api/card...');
 
+                // Longer timeout for mobile/idle scenarios (30 seconds)
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                const timeoutId = setTimeout(() => {
+                    console.log('Request timeout after 30 seconds');
+                    controller.abort();
+                }, 30000);
 
                 const response = await fetch('/api/card', {
                     credentials: 'include',
@@ -502,6 +508,9 @@
 
                 const data = await response.json();
                 console.log('Card loaded successfully');
+
+                // Reset retry count on successful load
+                retryCount = 0;
 
                 if (data.success && data.card) {
                     currentCard = data.card;
@@ -518,12 +527,48 @@
                 }
             } catch (error) {
                 console.error('Error loading card:', error);
-                container.innerHTML = `
-                    <div class="loading">
-                        <p style="color: red;">Error: ${error.message}</p>
-                        <p>Check console for details (F12)</p>
-                    </div>
-                `;
+
+                // Better error handling for different scenarios
+                if (error.name === 'AbortError') {
+                    console.log('Request was aborted - possible idle/sleep recovery');
+
+                    // Check retry limit
+                    if (retryCount < MAX_RETRIES) {
+                        retryCount++;
+                        console.log(`Retry attempt ${retryCount}/${MAX_RETRIES}`);
+
+                        // Show reconnecting message
+                        container.innerHTML = `
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Reconnecting... (Attempt ${retryCount})</p>
+                            </div>
+                        `;
+
+                        // Reset flag and retry after a brief delay
+                        isLoadingCard = false;
+                        setTimeout(() => loadNextCard(), 1000);
+                        return;
+                    } else {
+                        // Max retries reached
+                        console.log('Max retries reached');
+                        retryCount = 0; // Reset for next time
+                        container.innerHTML = `
+                            <div class="loading">
+                                <p style="color: #ff6b6b;">Connection issue</p>
+                                <p>Tap "Next" to retry</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // General network or other errors
+                    container.innerHTML = `
+                        <div class="loading">
+                            <p style="color: red;">Connection issue</p>
+                            <p>Tap "Next" to retry</p>
+                        </div>
+                    `;
+                }
             } finally {
                 nextBtn.disabled = false;
                 isLoadingCard = false;
